@@ -29,7 +29,7 @@ class Api:
         # 保存后无需刷新（因为读取时已实时）
         return self.config.save_config(obj)
 
-    def start_hook(self, game_id):
+    def start_hook(self, game_id,exact_match):
         # 避免重复启动
         if self.is_hook_running:
             print("钩子已在运行中")
@@ -66,13 +66,15 @@ class Api:
 
         # 启动钩子（在独立线程中运行，避免阻塞GUI）
         def run_hook():
+            print(exact_match)
             # 初始化钩子（确保实例不被回收）
             self.hook = KeyHook()
             # 调用钩子启动方法（参数顺序与KeyHook类匹配）
             success = self.hook.start(
                 window_title=game["window_name"],
                 src_keys=src_keys,
-                dst_keys=dst_keys
+                dst_keys=dst_keys,
+                exact_match=exact_match
             )
             
             # 更新状态
@@ -138,14 +140,8 @@ class Api:
 
 def create_tray_icon(window):
     """创建系统托盘图标及菜单"""
-    import win32gui
-    import win32con
-    import ctypes
-    
     # 创建图标图像
-    image = Image.new('RGB', (64, 64), color='blue')
-    dc = ImageDraw.Draw(image)
-    dc.rectangle((0, 0, 64, 64), fill='blue')
+    image = Image.open('iconx64.png')
     
     # 尝试获取并保存窗口句柄
     hwnd = None
@@ -225,10 +221,11 @@ def create_tray_icon(window):
     return icon
 def start_app():
     global tray_icon
-    # 创建窗口并绑定API
+    # 创建窗口并绑定API(固定窗口大小才不是因为懒得写自适应的布局)
     window = webview.create_window(
         'KeyRefit',
         './vue_dist/index.html',
+        # "http://localhost:5173/",
         width=868,
         height=574,
         resizable=False,
@@ -238,8 +235,8 @@ def start_app():
 
     tray_icon = create_tray_icon(window)
     # 启动webview
-    # webview.start(debug=True)
-    webview.start()
+    webview.start(debug=True)
+    # webview.start()
 
 if __name__ == '__main__':
     start_app()

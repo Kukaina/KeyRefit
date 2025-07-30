@@ -66,13 +66,24 @@
                                 </div>
                             </n-scrollbar>
                         </div>
-
-                        <n-float-button type="primary" @click="addMapping"
-                            style="position: absolute; bottom: 16px; right: 16px;" :tooltip="'添加按键映射'">
-                            <n-icon>
-                                <AddSharp></AddSharp>
-                            </n-icon>
-                        </n-float-button>
+                        <n-float-button-group style="position: absolute; bottom: 16px; right: 16px;">
+                            <n-float-button type="primary" @click="addMapping" :tooltip="'添加按键映射'">
+                                <n-icon>
+                                    <AddSharp></AddSharp>
+                                </n-icon>
+                            </n-float-button>
+                            <n-tooltip trigger="hover" placement="bottom">
+                                <template #trigger>
+                                    <n-float-button @click="toggleStrictMode()">
+                                        <n-icon :tooltip="exact_match">
+                                            <LockOpenSharp v-if="!exact_match.value"></LockOpenSharp>
+                                            <LockClosedSharp v-else></LockClosedSharp>
+                                        </n-icon>
+                                    </n-float-button>
+                                </template>
+                                是否开启窗口严格匹配,目前为{{ exact_match }}
+                            </n-tooltip>
+                        </n-float-button-group>
                     </n-card>
 
                     <n-button @click="hookHandle(data_now.id)" style="width: 100%;margin-top: 4px;" :loading="loading">
@@ -90,7 +101,7 @@
   
   
 <script setup>
-import { AddSharp } from "@vicons/ionicons5";
+import { AddSharp, LockOpenSharp, LockClosedSharp } from "@vicons/ionicons5";
 import {
     ref,
     computed,
@@ -105,6 +116,9 @@ import {
     NSpace,
     NInput
 } from "naive-ui";
+
+
+const exact_match = ref(true)
 const hookstart = ref(false)
 const editingName = ref(false);
 const editingWindowName = ref(false);
@@ -112,9 +126,7 @@ const editedName = ref('');
 const editedWindowName = ref('');
 const datum = ref([]); // 真实配置加载后赋值
 const loading = ref(false);
-
 const selectedItem = ref(null);
-
 const dialog = useDialog();
 
 // 按键名称映射，用于友好显示
@@ -163,7 +175,7 @@ function convertKeyToBackendName(key) {
     return key;
 }
 
-// 树形选择键位选项（保持你已有结构）
+// 树形选择键位选项
 const treeOptions = [
     {
         label: "字母区",
@@ -263,7 +275,7 @@ const hookHandle = async (id) => {
             // 启动逻辑（保持不变）
             console.log("正在启动映射");
 
-            result = await pywebview.api.start_hook(parseInt(id));
+            result = await pywebview.api.start_hook(parseInt(id), exact_match.value);
             console.log(result);
 
         } else {
@@ -327,21 +339,13 @@ onMounted(() => {
             console.error('启动时游戏配置加载失败:', err);
         });
     })
-});
-
-
-function deleteCurrentConfig() {
-    if (!data_now.value) return;
-
-    const current = data_now.value;
-    const index = datum.value.findIndex(item => item.name === current.name);
-
-    if (index !== -1) {
-        datum.value.splice(index, 1);
-        data_now.value = null; // 清空当前选中项
-        save(); // 如果你有保存到本地的函数
+    if (!localStorage.getItem("exact_match")) {
+        localStorage.setItem("exact_match", true)
     }
-}
+    exact_match.value = localStorage.getItem("exact_match")
+
+
+});
 
 // 监听data_now变化，同步编辑框内容与编辑状态
 watch(data_now, (newVal) => {
@@ -753,6 +757,24 @@ function save() {
     }).catch(err => {
         alert("保存异常: " + err);
     });
+}
+
+function deleteCurrentConfig() {
+    if (!data_now.value) return;
+
+    const current = data_now.value;
+    const index = datum.value.findIndex(item => item.name === current.name);
+
+    if (index !== -1) {
+        datum.value.splice(index, 1);
+        data_now.value = null; // 清空当前选中项
+        save();
+    }
+}
+
+function toggleStrictMode() {
+    exact_match.value = !exact_match.value
+    localStorage.setItem("exact_match", exact_match.value)
 }
 </script>
 

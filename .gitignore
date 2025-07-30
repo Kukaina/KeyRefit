@@ -11,3 +11,7 @@ wheels/
 vue_dist/
 node_modules
 uv.lock
+nuitka-crash-report.xml
+main.build
+main.dist
+UI\keyrefit_ui\.vscode
