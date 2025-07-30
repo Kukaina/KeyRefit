@@ -235,8 +235,8 @@ def start_app():
 
     tray_icon = create_tray_icon(window)
     # 启动webview
-    webview.start(debug=True)
-    # webview.start()
+    # webview.start(debug=True)
+    webview.start()
 
 if __name__ == '__main__':
     start_app()

@@ -55,3 +55,17 @@ git clone https://github.com/Kukaina/KeyRefit.git
 ## 修改dll
 
 如需修改dll代码请使用Vs2022打开根目录下的`keyrefit_hook\keyrefit_hook.sln`文件
+
+
+
+# 如何编译
+
+本项目使用nuitka进行打包,在编译前请先将nuitka升级至最新版
+
+然后执行打包命令
+
+```bash
+nuitka --standalone --windows-disable-console --include-data-dir=vue_dist=vue_dist --include-data-dir=config=config --windows-icon-from-ico=icon.png --follow-imports --include-module=webview --nofollow-import-to=webview.platforms.android --nofollow-import-to=webview.platforms.gtk --nofollow-import-to=webview.platforms.qt --nofollow-import-to=webview.platforms.cocoa --include-data-files=hook.dll=./ --include-data-files=iconx64.png=./  main.py
+```
+
+编译产物就在main.dist下
